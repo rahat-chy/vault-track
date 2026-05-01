@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum LoanStatus {
+  ACTIVE
+  CLOSED
+  DEFAULTED
+}
+
+enum LoanType {
+  GIVEN
+  TAKEN
+}
+
+enum InvestmentStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum StockStatus {
+  ACTIVE
+  CLOSED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Person {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String   @unique
+  email      String?
+  createdAt  DateTime @default(now())
+  modifiedAt DateTime @updatedAt
+
+  loans Loan[]
+}
+
+model Loan {
+  id              String     @id @default(cuid())
+  personId        String
+  principalAmount Decimal    @db.Decimal(12, 2)
+  startDate       DateTime
+  dueDate         DateTime
+  returnDate      DateTime?
+  status          LoanStatus @default(ACTIVE)
+  totalPaid       Decimal    @default(0) @db.Decimal(12, 2)
+  type            LoanType
+  notes           String?
+  createdAt       DateTime   @default(now())
+  modifiedAt      DateTime   @updatedAt
+
+  person   Person        @relation(fields: [personId], references: [id])
+  payments LoanPayment[]
+}
+
+model LoanPayment {
+  id        String   @id @default(cuid())
+  loanId    String
+  amount    Decimal  @db.Decimal(12, 2)
+  paidAt    DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+
+  loan Loan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+}
+
+model OneTimeInvestment {
+  id             String           @id @default(cuid())
+  name           String
+  investedAmount Decimal          @db.Decimal(12, 2)
+  investmentDate DateTime
+  discountAmount Decimal?         @db.Decimal(12, 2)
+  exitDate       DateTime?
+  returnAmount   Decimal          @default(0) @db.Decimal(12, 2)
+  status         InvestmentStatus @default(ACTIVE)
+  description    String?
+  createdAt      DateTime         @default(now())
+  modifiedAt     DateTime         @updatedAt
+
+  returns OneTimeInvestmentReturn[]
+}
+
+model OneTimeInvestmentReturn {
+  id           String   @id @default(cuid())
+  investmentId String
+  amount       Decimal  @db.Decimal(12, 2)
+  receivedAt   DateTime
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  investment OneTimeInvestment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+}
+
+model Stock {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  status     StockStatus @default(ACTIVE)
+  createdAt  DateTime    @default(now())
+  modifiedAt DateTime    @updatedAt
+
+  buys      StockBuy[]
+  sells     StockSell[]
+  dividends StockDividend[]
+}
+
+model StockBuy {
+  id             String   @id @default(cuid())
+  stockId        String
+  unitPrice      Decimal  @db.Decimal(12, 4)
+  numberOfStocks Decimal  @db.Decimal(12, 4)
+  investmentDate DateTime
+  notes          String?
+  createdAt      DateTime @default(now())
+  modifiedAt     DateTime @updatedAt
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+}
+
+model StockSell {
+  id             String   @id @default(cuid())
+  stockId        String
+  unitPrice      Decimal  @db.Decimal(12, 4)
+  numberOfStocks Decimal  @db.Decimal(12, 4)
+  soldDate       DateTime
+  notes          String?
+  createdAt      DateTime @default(now())
+  modifiedAt     DateTime @updatedAt
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+}
+
+model StockDividend {
+  id                String   @id @default(cuid())
+  stockId           String
+  dividendAmount    Decimal  @db.Decimal(12, 2)
+  dividendUnitPrice Decimal  @db.Decimal(12, 4)
+  dividendDate      DateTime
+  numberOfStocks    Decimal  @db.Decimal(12, 4)
+  currentUnitPrice  Decimal  @db.Decimal(12, 4)
+  createdAt         DateTime @default(now())
+  modifiedAt        DateTime @updatedAt
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+}
