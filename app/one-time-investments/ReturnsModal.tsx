@@ -14,6 +14,7 @@ interface Props {
 export default function ReturnsModal({ open, investment, onClose, onSaved }: Props) {
   const [returns, setReturns] = useState<OneTimeInvestmentReturn[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingReturn, setEditingReturn] = useState<OneTimeInvestmentReturn | null>(null);
   const [amount, setAmount] = useState("");
   const [receivedAt, setReceivedAt] = useState(toDateInput(new Date().toISOString()));
   const [notes, setNotes] = useState("");
@@ -37,13 +38,15 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
 
   useEffect(() => {
     if (!open || !investment) return;
+    setEditingReturn(null);
     setAmount("");
     setReceivedAt(toDateInput(new Date().toISOString()));
     setNotes("");
     setError("");
     setDeleteError("");
     fetchReturns();
-  }, [open, investment]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open || !investment) return null;
 
@@ -53,7 +56,23 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
   const returned = Number(investment.returnAmount);
   const net = returned - effective;
 
-  async function handleAdd(e: React.FormEvent) {
+  function startEdit(r: OneTimeInvestmentReturn) {
+    setEditingReturn(r);
+    setAmount(String(r.amount));
+    setReceivedAt(toDateInput(r.receivedAt));
+    setNotes(r.notes ?? "");
+    setError("");
+  }
+
+  function cancelEdit() {
+    setEditingReturn(null);
+    setAmount("");
+    setReceivedAt(toDateInput(new Date().toISOString()));
+    setNotes("");
+    setError("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
@@ -66,18 +85,24 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
     }
     setSaving(true);
     try {
-      const res = await fetch(`/api/one-time-investments/${investment!.id}/returns`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parseFloat(amount), receivedAt, notes: notes || null }),
-      });
+      const body = JSON.stringify({ amount: parseFloat(amount), receivedAt, notes: notes || null });
+      const res = editingReturn
+        ? await fetch(`/api/one-time-investments/${investment!.id}/returns/${editingReturn.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body,
+          })
+        : await fetch(`/api/one-time-investments/${investment!.id}/returns`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+          });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Failed to add return. Please try again.");
+        setError(data.error || "Failed to save return. Please try again.");
         return;
       }
-      setAmount("");
-      setNotes("");
+      cancelEdit();
       await fetchReturns();
       onSaved();
     } catch {
@@ -99,6 +124,7 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
         setDeleteError(data.error || "Failed to delete return. Please try again.");
         return;
       }
+      if (editingReturn?.id === returnId) cancelEdit();
       await fetchReturns();
       onSaved();
     } catch {
@@ -166,7 +192,7 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {returns.map((r) => (
-                  <tr key={r.id} className="group">
+                  <tr key={r.id} className={`group ${editingReturn?.id === r.id ? "bg-indigo-50" : ""}`}>
                     <td className="py-2.5 pr-4 text-slate-600">{formatDate(r.receivedAt)}</td>
                     <td className="py-2.5 pr-4 text-right text-slate-700 tabular-nums font-medium">
                       {formatCurrency(Number(r.amount))}
@@ -175,15 +201,26 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
                       {r.notes ?? "—"}
                     </td>
                     <td className="py-2.5 pl-3">
-                      <button
-                        onClick={() => handleDelete(r.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
-                        title="Delete return"
-                      >
-                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => startEdit(r)}
+                          className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer"
+                          title="Edit return"
+                        >
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(r.id)}
+                          className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                          title="Delete return"
+                        >
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -193,8 +230,10 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
         </div>
 
         <div className="px-6 py-4 border-t border-slate-200">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Add Return</p>
-          <form onSubmit={handleAdd} className="space-y-3">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            {editingReturn ? "Edit Return" : "Add Return"}
+          </p>
+          <form onSubmit={handleSubmit} className="space-y-3">
             {error && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                 {error}
@@ -235,13 +274,22 @@ export default function ReturnsModal({ open, investment, onClose, onSaved }: Pro
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              {editingReturn && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={saving}
                 className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
               >
-                {saving ? "Adding…" : "Add Return"}
+                {saving ? "Saving…" : editingReturn ? "Save Changes" : "Add Return"}
               </button>
             </div>
           </form>

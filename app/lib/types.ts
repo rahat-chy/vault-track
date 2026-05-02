@@ -2,9 +2,10 @@ import {
   InvestmentStatus,
   LoanStatus,
   LoanType,
+  StockStatus,
 } from '@/app/generated/prisma/enums';
 
-export { LoanType, LoanStatus, InvestmentStatus };
+export { LoanType, LoanStatus, InvestmentStatus, StockStatus };
 
 export interface Person {
   id: string;
@@ -74,4 +75,47 @@ export interface InvestmentFormData {
   exitDate: string;
   status: string;
   description: string;
+}
+
+export interface StockBuy {
+  id: string;
+  stockId: string;
+  unitPrice: string | number;
+  numberOfStocks: string | number;
+  investmentDate: string;
+  notes: string | null;
+}
+
+export interface StockSell {
+  id: string;
+  stockId: string;
+  unitPrice: string | number;
+  numberOfStocks: string | number;
+  soldDate: string;
+  notes: string | null;
+}
+
+export interface StockDividend {
+  id: string;
+  stockId: string;
+  dividendAmount: string | number;
+  dividendUnitPrice: string | number;
+  dividendDate: string;
+  numberOfStocks: string | number;
+  currentUnitPrice: string | number;
+}
+
+export interface Stock {
+  id: string;
+  name: string;
+  status: StockStatus;
+  createdAt: string;
+  buys: StockBuy[];
+  sells: StockSell[];
+  dividends: StockDividend[];
+}
+
+export interface StockFormData {
+  name: string;
+  status: string;
 }

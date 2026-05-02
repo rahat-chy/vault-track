@@ -14,6 +14,7 @@ interface Props {
 export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
   const [payments, setPayments] = useState<LoanPayment[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<LoanPayment | null>(null);
   const [amount, setAmount] = useState("");
   const [paidAt, setPaidAt] = useState(toDateInput(new Date().toISOString()));
   const [notes, setNotes] = useState("");
@@ -37,13 +38,15 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
 
   useEffect(() => {
     if (!open || !loan) return;
+    setEditingPayment(null);
     setAmount("");
     setPaidAt(toDateInput(new Date().toISOString()));
     setNotes("");
     setError("");
     setDeleteError("");
     fetchPayments();
-  }, [open, loan]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open || !loan) return null;
 
@@ -51,7 +54,23 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
   const totalPaid = Number(loan.totalPaid);
   const remaining = Math.max(principal - totalPaid, 0);
 
-  async function handleAdd(e: React.FormEvent) {
+  function startEdit(p: LoanPayment) {
+    setEditingPayment(p);
+    setAmount(String(p.amount));
+    setPaidAt(toDateInput(p.paidAt));
+    setNotes(p.notes ?? "");
+    setError("");
+  }
+
+  function cancelEdit() {
+    setEditingPayment(null);
+    setAmount("");
+    setPaidAt(toDateInput(new Date().toISOString()));
+    setNotes("");
+    setError("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
@@ -64,18 +83,24 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
     }
     setSaving(true);
     try {
-      const res = await fetch(`/api/loans/${loan!.id}/payments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parseFloat(amount), paidAt, notes: notes || null }),
-      });
+      const body = JSON.stringify({ amount: parseFloat(amount), paidAt, notes: notes || null });
+      const res = editingPayment
+        ? await fetch(`/api/loans/${loan!.id}/payments/${editingPayment.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body,
+          })
+        : await fetch(`/api/loans/${loan!.id}/payments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+          });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Failed to add payment. Please try again.");
+        setError(data.error || "Failed to save payment. Please try again.");
         return;
       }
-      setAmount("");
-      setNotes("");
+      cancelEdit();
       await fetchPayments();
       onSaved();
     } catch {
@@ -94,6 +119,7 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
         setDeleteError(data.error || "Failed to delete payment. Please try again.");
         return;
       }
+      if (editingPayment?.id === paymentId) cancelEdit();
       await fetchPayments();
       onSaved();
     } catch {
@@ -145,22 +171,36 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {payments.map((p) => (
-                  <tr key={p.id} className="group">
+                  <tr
+                    key={p.id}
+                    className={`group ${editingPayment?.id === p.id ? "bg-indigo-50" : ""}`}
+                  >
                     <td className="py-2.5 pr-4 text-slate-600">{formatDate(p.paidAt)}</td>
                     <td className="py-2.5 pr-4 text-right text-slate-700 tabular-nums font-medium">{formatCurrency(Number(p.amount))}</td>
                     <td className="py-2.5 text-slate-500 text-xs max-w-[140px] truncate" title={p.notes ?? undefined}>
                       {p.notes ?? "—"}
                     </td>
                     <td className="py-2.5 pl-3">
-                      <button
-                        onClick={() => handleDelete(p.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
-                        title="Delete payment"
-                      >
-                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => startEdit(p)}
+                          className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer"
+                          title="Edit payment"
+                        >
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
+                          className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                          title="Delete payment"
+                        >
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -170,8 +210,10 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
         </div>
 
         <div className="px-6 py-4 border-t border-slate-200">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Add Payment</p>
-          <form onSubmit={handleAdd} className="space-y-3">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            {editingPayment ? "Edit Payment" : "Add Payment"}
+          </p>
+          <form onSubmit={handleSubmit} className="space-y-3">
             {error && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
             )}
@@ -199,7 +241,9 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">
+                Notes <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
               <input
                 type="text"
                 placeholder="Any notes…"
@@ -208,13 +252,22 @@ export default function PaymentsModal({ open, loan, onClose, onSaved }: Props) {
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              {editingPayment && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="px-4 py-2 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={saving}
                 className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
               >
-                {saving ? "Adding…" : "Add Payment"}
+                {saving ? "Saving…" : editingPayment ? "Save Changes" : "Add Payment"}
               </button>
             </div>
           </form>
