@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { toDateInput } from "@/app/lib/format";
-import type { Loan, LoanFormData, LoanType, Person } from "@/app/lib/types";
+import { LOAN_TYPE_LABELS, LOAN_TYPE_PERSON_LABELS } from "@/app/lib/loans";
+import { LoanStatus, LoanType } from "@/app/lib/types";
+import type { Loan, LoanFormData, Person } from "@/app/lib/types";
 
 interface Props {
   open: boolean;
@@ -17,7 +19,7 @@ const EMPTY_FORM: LoanFormData = {
   principalAmount: "",
   startDate: "",
   dueDate: "",
-  status: "ACTIVE",
+  status: LoanStatus.ACTIVE,
   notes: "",
 };
 
@@ -164,7 +166,7 @@ export default function LoanModal({
     }
   }
 
-  const title = `${loan ? "Edit" : "New"} Loan ${loanType === "GIVEN" ? "Given" : "Taken"}`;
+  const title = `${loan ? "Edit" : "New"} Loan ${LOAN_TYPE_LABELS[loanType]}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -200,7 +202,7 @@ export default function LoanModal({
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              {loanType === "GIVEN" ? "Borrower" : "Lender"}
+              {LOAN_TYPE_PERSON_LABELS[loanType]}
             </label>
             <div className="flex gap-2">
               <select
@@ -301,9 +303,9 @@ export default function LoanModal({
                 onChange={(e) => set("status", e.target.value)}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="ACTIVE">Active</option>
-                <option value="CLOSED">Closed</option>
-                <option value="DEFAULTED">Defaulted</option>
+                <option value={LoanStatus.ACTIVE}>Active</option>
+                <option value={LoanStatus.CLOSED}>Closed</option>
+                <option value={LoanStatus.DEFAULTED}>Defaulted</option>
               </select>
             </div>
           )}

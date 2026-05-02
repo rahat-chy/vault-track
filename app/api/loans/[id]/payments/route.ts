@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { LoanStatus } from '@/app/lib/types';
 import { prisma } from '@/app/lib/db';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -35,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     where: { id },
     data: {
       totalPaid: newTotalPaid,
-      ...(fullyRepaid ? { status: 'CLOSED', returnDate: new Date() } : {}),
+      ...(fullyRepaid ? { status: LoanStatus.CLOSED, returnDate: new Date() } : {}),
     },
   });
 

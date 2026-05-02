@@ -1,7 +1,7 @@
 "use client";
 
 import { formatCurrency, formatDate } from "@/app/lib/format";
-import { LOAN_STATUS_LABELS, LOAN_STATUS_STYLES } from "@/app/lib/loans";
+import { LOAN_STATUS_LABELS, LOAN_STATUS_STYLES, LOAN_TYPE_EMPTY_LABELS, LOAN_TYPE_PERSON_LABELS } from "@/app/lib/loans";
 import type { Loan, LoanStatus, LoanType } from "@/app/lib/types";
 
 interface Props {
@@ -29,12 +29,12 @@ export default function LoanTable({
   onDelete,
   onPayments,
 }: Props) {
-  const label = loanType === "GIVEN" ? "Borrower" : "Lender";
+  const label = LOAN_TYPE_PERSON_LABELS[loanType];
 
   if (loans.length === 0) {
     return (
       <div className="text-center py-12 text-slate-400 text-sm">
-        No {loanType === "GIVEN" ? "loans given" : "loans taken"} yet.
+        No {LOAN_TYPE_EMPTY_LABELS[loanType]} yet.
       </div>
     );
   }

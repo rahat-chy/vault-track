@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { LoanStatus } from '@/app/lib/types';
 import { prisma } from '@/app/lib/db';
 
 export async function DELETE(
@@ -21,7 +22,7 @@ export async function DELETE(
     where: { id },
     data: {
       totalPaid: newTotalPaid,
-      ...(!stillFullyPaid ? { status: 'ACTIVE', returnDate: null } : {}),
+      ...(!stillFullyPaid ? { status: LoanStatus.ACTIVE, returnDate: null } : {}),
     },
   });
 

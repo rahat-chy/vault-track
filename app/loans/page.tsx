@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { formatCurrency } from "@/app/lib/format";
-import type { Loan, LoanType } from "@/app/lib/types";
+import { LoanType } from "@/app/lib/types";
+import type { Loan } from "@/app/lib/types";
 import LoanModal from "./LoanModal";
 import LoanTable from "./LoanTable";
 import PaymentsModal from "./PaymentsModal";
@@ -11,7 +12,7 @@ export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalLoanType, setModalLoanType] = useState<LoanType>("GIVEN");
+  const [modalLoanType, setModalLoanType] = useState<LoanType>(LoanType.GIVEN);
   const [editingLoan, setEditingLoan] = useState<Loan | null>(null);
   const [deletingLoan, setDeletingLoan] = useState<Loan | null>(null);
   const [deleteError, setDeleteError] = useState("");
@@ -68,8 +69,8 @@ export default function LoansPage() {
     }
   }
 
-  const given = loans.filter((l) => l.type === "GIVEN");
-  const taken = loans.filter((l) => l.type === "TAKEN");
+  const given = loans.filter((l) => l.type === LoanType.GIVEN);
+  const taken = loans.filter((l) => l.type === LoanType.TAKEN);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -85,9 +86,9 @@ export default function LoansPage() {
         description="Money you have lent to others"
         accentColor="indigo"
         loans={given}
-        loanType="GIVEN"
+        loanType={LoanType.GIVEN}
         loading={loading}
-        onAdd={() => openCreate("GIVEN")}
+        onAdd={() => openCreate(LoanType.GIVEN)}
         onEdit={openEdit}
         onDelete={setDeletingLoan}
         onPayments={setPaymentsLoan}
@@ -98,9 +99,9 @@ export default function LoansPage() {
         description="Money you have borrowed from others"
         accentColor="amber"
         loans={taken}
-        loanType="TAKEN"
+        loanType={LoanType.TAKEN}
         loading={loading}
-        onAdd={() => openCreate("TAKEN")}
+        onAdd={() => openCreate(LoanType.TAKEN)}
         onEdit={openEdit}
         onDelete={setDeletingLoan}
         onPayments={setPaymentsLoan}

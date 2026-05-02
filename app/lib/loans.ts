@@ -1,4 +1,19 @@
-import type { LoanStatus } from './types';
+import type { LoanStatus, LoanType } from './types';
+
+export const LOAN_TYPE_LABELS: Record<LoanType, string> = {
+  GIVEN: 'Given',
+  TAKEN: 'Taken',
+};
+
+export const LOAN_TYPE_PERSON_LABELS: Record<LoanType, string> = {
+  GIVEN: 'Borrower',
+  TAKEN: 'Lender',
+};
+
+export const LOAN_TYPE_EMPTY_LABELS: Record<LoanType, string> = {
+  GIVEN: 'loans given',
+  TAKEN: 'loans taken',
+};
 
 export const LOAN_STATUS_STYLES: Record<LoanStatus, string> = {
   ACTIVE: 'bg-emerald-100 text-emerald-700',
