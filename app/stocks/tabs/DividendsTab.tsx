@@ -9,6 +9,7 @@ interface DivForm {
   numberOfStocks: string;
   date: string;
   currentUnitPrice: string;
+  purificationAmount: string;
 }
 
 interface Props {
@@ -23,6 +24,7 @@ export default function DividendsTab({ stock, onSaved }: Props) {
     numberOfStocks: "",
     date: toDateInput(new Date().toISOString()),
     currentUnitPrice: "",
+    purificationAmount: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -39,13 +41,14 @@ export default function DividendsTab({ stock, onSaved }: Props) {
       numberOfStocks: String(div.numberOfStocks),
       date: toDateInput(div.dividendDate),
       currentUnitPrice: String(div.currentUnitPrice),
+      purificationAmount: String(div.purificationAmount),
     });
     setError("");
   }
 
   function cancelEdit() {
     setEditing(null);
-    setForm({ dividendUnitPrice: "", numberOfStocks: "", date: toDateInput(new Date().toISOString()), currentUnitPrice: "" });
+    setForm({ dividendUnitPrice: "", numberOfStocks: "", date: toDateInput(new Date().toISOString()), currentUnitPrice: "", purificationAmount: "" });
     setError("");
   }
 
@@ -80,6 +83,7 @@ export default function DividendsTab({ stock, onSaved }: Props) {
         numberOfStocks: qty,
         dividendDate: form.date,
         currentUnitPrice: parseFloat(form.currentUnitPrice),
+        purificationAmount: form.purificationAmount ? parseFloat(form.purificationAmount) : 0,
       };
       const res = editing
         ? await fetch(`/api/stocks/${stock.id}/dividends/${editing.id}`, {
@@ -140,6 +144,7 @@ export default function DividendsTab({ stock, onSaved }: Props) {
               <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Div/Share</th>
               <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Total</th>
               <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Cur. Price</th>
+              <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Purification</th>
               <th className="pb-2" />
             </tr>
           </thead>
@@ -154,6 +159,11 @@ export default function DividendsTab({ stock, onSaved }: Props) {
                 </td>
                 <td className="py-2.5 pr-4 text-right text-slate-600 tabular-nums">
                   {formatCurrency(Number(div.currentUnitPrice))}
+                </td>
+                <td className="py-2.5 pr-4 text-right tabular-nums">
+                  {Number(div.purificationAmount) > 0
+                    ? <span className="text-amber-600 font-medium">-{formatCurrency(Number(div.purificationAmount))}</span>
+                    : <span className="text-slate-400">—</span>}
                 </td>
                 <td className="py-2.5 pl-3">
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -225,6 +235,15 @@ export default function DividendsTab({ stock, onSaved }: Props) {
                 type="number" min="0.0001" step="0.0001" placeholder="0.00"
                 value={form.currentUnitPrice}
                 onChange={(e) => setForm((f) => ({ ...f, currentUnitPrice: e.target.value }))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Purification</label>
+              <input
+                type="number" min="0" step="0.01" placeholder="0.00"
+                value={form.purificationAmount}
+                onChange={(e) => setForm((f) => ({ ...f, purificationAmount: e.target.value }))}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>

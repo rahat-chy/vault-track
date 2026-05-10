@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { personId, principalAmount, startDate, dueDate, returnDate, type, notes } = body;
 
-  if (!personId || !principalAmount || !startDate || !dueDate || !type) {
+  if (!personId || !principalAmount || !startDate || !type) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       personId,
       principalAmount,
       startDate: new Date(startDate),
-      dueDate: new Date(dueDate),
+      dueDate: dueDate ? new Date(dueDate) : null,
       returnDate: returnDate ? new Date(returnDate) : null,
       type,
       notes: notes || null,

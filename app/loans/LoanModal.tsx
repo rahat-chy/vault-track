@@ -53,7 +53,7 @@ export default function LoanModal({
             personId: loan.personId,
             principalAmount: String(loan.principalAmount),
             startDate: toDateInput(loan.startDate),
-            dueDate: toDateInput(loan.dueDate),
+            dueDate: loan.dueDate ? toDateInput(loan.dueDate) : "",
             status: loan.status,
             notes: loan.notes ?? "",
           }
@@ -119,11 +119,7 @@ export default function LoanModal({
       setError("Start date is required.");
       return;
     }
-    if (!form.dueDate) {
-      setError("Due date is required.");
-      return;
-    }
-    if (form.dueDate < form.startDate) {
+    if (form.dueDate && form.dueDate < form.startDate) {
       setError("Due date cannot be earlier than the start date.");
       return;
     }
@@ -282,7 +278,7 @@ export default function LoanModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Due Date
+                Due Date <span className="text-slate-400 font-normal">(optional)</span>
               </label>
               <input
                 type="date"

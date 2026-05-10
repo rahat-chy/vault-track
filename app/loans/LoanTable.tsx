@@ -94,7 +94,7 @@ export default function LoanTable({
                   {formatDate(loan.startDate)}
                 </td>
                 <td className="py-3 pr-4 text-slate-600">
-                  {formatDate(loan.dueDate)}
+                  {loan.dueDate ? formatDate(loan.dueDate) : "—"}
                 </td>
                 <td className="py-3 pr-4">
                   <StatusBadge status={loan.status} />

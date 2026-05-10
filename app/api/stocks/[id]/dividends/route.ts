@@ -4,7 +4,7 @@ import { prisma } from '@/app/lib/db';
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json();
-  const { dividendUnitPrice, numberOfStocks, dividendDate, currentUnitPrice } = body;
+  const { dividendUnitPrice, numberOfStocks, dividendDate, currentUnitPrice, purificationAmount } = body;
 
   if (!dividendUnitPrice || !numberOfStocks || !dividendDate || !currentUnitPrice) {
     return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
@@ -36,6 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       dividendDate: new Date(dividendDate),
       currentUnitPrice,
       dividendAmount,
+      purificationAmount: purificationAmount ? parseFloat(String(purificationAmount)) : 0,
     },
   });
 

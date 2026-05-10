@@ -12,7 +12,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       personId,
       principalAmount,
       startDate: new Date(startDate),
-      dueDate: new Date(dueDate),
+      dueDate: dueDate ? new Date(dueDate) : null,
       status,
       type,
       notes: notes || null,

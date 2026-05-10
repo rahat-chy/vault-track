@@ -41,13 +41,14 @@ export default function StockTable({ stocks, onEdit, onDelete, onTransactions }:
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Invested</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Sells</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Dividends</th>
+            <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Purification</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Net</th>
             <th className="pb-3" />
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {stocks.map((stock) => {
-            const { invested, sells, dividends, net, heldShares } = stockTotals(stock);
+            const { invested, sells, dividends, purification, net, heldShares } = stockTotals(stock);
             return (
               <tr key={stock.id} className="group hover:bg-slate-50 transition-colors">
                 <td className="py-3 pr-4 font-medium text-slate-800">{stock.name}</td>
@@ -65,6 +66,9 @@ export default function StockTable({ stocks, onEdit, onDelete, onTransactions }:
                 </td>
                 <td className="py-3 pr-4 text-right text-slate-600 tabular-nums">
                   {dividends > 0 ? formatCurrency(dividends) : "—"}
+                </td>
+                <td className="py-3 pr-4 text-right tabular-nums text-amber-600">
+                  {purification > 0 ? formatCurrency(purification) : "—"}
                 </td>
                 <td className={`py-3 pr-4 text-right tabular-nums font-medium ${net >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                   {invested > 0 || sells > 0 || dividends > 0

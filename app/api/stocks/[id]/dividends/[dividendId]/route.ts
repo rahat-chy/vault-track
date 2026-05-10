@@ -7,7 +7,7 @@ export async function PUT(
 ) {
   const { dividendId } = await params;
   const body = await request.json();
-  const { dividendUnitPrice, numberOfStocks, dividendDate, currentUnitPrice } = body;
+  const { dividendUnitPrice, numberOfStocks, dividendDate, currentUnitPrice, purificationAmount } = body;
 
   if (!dividendUnitPrice || !numberOfStocks || !dividendDate || !currentUnitPrice) {
     return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
@@ -39,6 +39,7 @@ export async function PUT(
       dividendDate: new Date(dividendDate),
       currentUnitPrice,
       dividendAmount,
+      purificationAmount: purificationAmount ? parseFloat(String(purificationAmount)) : 0,
     },
   });
 

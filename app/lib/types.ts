@@ -18,7 +18,7 @@ export interface Loan {
   personId: string;
   principalAmount: string | number;
   startDate: string;
-  dueDate: string;
+  dueDate: string | null;
   returnDate: string | null;
   status: LoanStatus;
   totalPaid: string | number;
@@ -103,6 +103,7 @@ export interface StockDividend {
   dividendDate: string;
   numberOfStocks: string | number;
   currentUnitPrice: string | number;
+  purificationAmount: string | number;
 }
 
 export interface Stock {
