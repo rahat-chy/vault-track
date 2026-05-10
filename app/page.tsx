@@ -6,6 +6,7 @@ import type { Loan, OneTimeInvestment, Stock } from "@/app/lib/types";
 import { LoanType, LoanStatus } from "@/app/lib/types";
 import { stockTotals } from "@/app/lib/stocks";
 import { formatCurrency } from "@/app/lib/format";
+import { exportToPdf } from "@/app/lib/pdf-export";
 import PortfolioAllocationChart from "@/app/dashboard/PortfolioAllocationChart";
 import FinancialPositionChart from "@/app/dashboard/FinancialPositionChart";
 import InvestmentReturnsChart from "@/app/dashboard/InvestmentReturnsChart";
@@ -41,6 +42,16 @@ export default function DashboardPage() {
   const [investments, setInvestments] = useState<OneTimeInvestment[]>([]);
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await exportToPdf();
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     Promise.all([
@@ -155,11 +166,30 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-800">Dashboard</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Overview of your financial portfolio
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-800">Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Overview of your financial portfolio
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={loading || exporting}
+          className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer shrink-0"
+        >
+          {exporting ? (
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m0 8l-3-3m3 3l3-3M4 20h16" />
+            </svg>
+          )}
+          {exporting ? 'Generating…' : 'Export PDF'}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
