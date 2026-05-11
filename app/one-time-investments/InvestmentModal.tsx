@@ -17,6 +17,7 @@ const EMPTY_FORM: InvestmentFormData = {
   investedAmount: "",
   investmentDate: "",
   discountAmount: "",
+  donated: "",
   exitDate: "",
   status: InvestmentStatus.ACTIVE,
   description: "",
@@ -35,6 +36,7 @@ export default function InvestmentModal({ open, investment, onClose, onSaved }: 
             investedAmount: String(investment.investedAmount),
             investmentDate: toDateInput(investment.investmentDate),
             discountAmount: investment.discountAmount != null ? String(investment.discountAmount) : "",
+            donated: investment.donated != null ? String(investment.donated) : "",
             exitDate: toDateInput(investment.exitDate),
             status: investment.status,
             description: investment.description ?? "",
@@ -65,6 +67,10 @@ export default function InvestmentModal({ open, investment, onClose, onSaved }: 
       setError("Please enter a valid discount amount.");
       return;
     }
+    if (form.donated && (isNaN(Number(form.donated)) || Number(form.donated) < 0)) {
+      setError("Please enter a valid donated amount.");
+      return;
+    }
     if (!form.investmentDate) {
       setError("Investment date is required.");
       return;
@@ -80,6 +86,7 @@ export default function InvestmentModal({ open, investment, onClose, onSaved }: 
       investedAmount: parseFloat(form.investedAmount),
       investmentDate: form.investmentDate,
       discountAmount: form.discountAmount ? parseFloat(form.discountAmount) : null,
+      donated: form.donated ? parseFloat(form.donated) : null,
       exitDate: form.exitDate || null,
       status: form.status,
       description: form.description || null,
@@ -174,6 +181,21 @@ export default function InvestmentModal({ open, investment, onClose, onSaved }: 
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Donated <span className="text-slate-400 font-normal">(optional)</span>
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              value={form.donated}
+              onChange={(e) => set("donated", e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

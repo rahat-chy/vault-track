@@ -11,7 +11,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { name, investedAmount, investmentDate, discountAmount, exitDate, status, description } = body;
+  const { name, investedAmount, investmentDate, discountAmount, donated, exitDate, status, description } = body;
 
   if (!name || !investedAmount || !investmentDate) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       investedAmount,
       investmentDate: new Date(investmentDate),
       discountAmount: discountAmount != null ? discountAmount : null,
+      donated: donated != null ? donated : null,
       exitDate: exitDate ? new Date(exitDate) : null,
       status: status ?? InvestmentStatus.ACTIVE,
       description: description || null,

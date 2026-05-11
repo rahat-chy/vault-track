@@ -38,6 +38,7 @@ export default function InvestmentTable({ investments, onEdit, onDelete, onRetur
             <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Name</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Invested</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Discount</th>
+            <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Donated</th>
             <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Date</th>
             <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Exit Date</th>
             <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Status</th>
@@ -60,6 +61,9 @@ export default function InvestmentTable({ investments, onEdit, onDelete, onRetur
                 <td className="py-3 pr-4 text-right text-slate-700 tabular-nums">{formatCurrency(invested)}</td>
                 <td className="py-3 pr-4 text-right text-slate-500 tabular-nums">
                   {inv.discountAmount != null ? formatCurrency(discount) : "—"}
+                </td>
+                <td className="py-3 pr-4 text-right text-slate-500 tabular-nums">
+                  {inv.donated != null ? formatCurrency(Number(inv.donated)) : "—"}
                 </td>
                 <td className="py-3 pr-4 text-slate-600">{formatDate(inv.investmentDate)}</td>
                 <td className="py-3 pr-4 text-slate-600">{inv.exitDate ? formatDate(inv.exitDate) : "—"}</td>

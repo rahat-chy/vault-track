@@ -51,6 +51,7 @@ export interface OneTimeInvestment {
   investedAmount: string | number;
   investmentDate: string;
   discountAmount: string | number | null;
+  donated: string | number | null;
   exitDate: string | null;
   returnAmount: string | number;
   status: InvestmentStatus;
@@ -72,6 +73,7 @@ export interface InvestmentFormData {
   investedAmount: string;
   investmentDate: string;
   discountAmount: string;
+  donated: string;
   exitDate: string;
   status: string;
   description: string;

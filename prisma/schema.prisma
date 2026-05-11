@@ -79,6 +79,7 @@ model OneTimeInvestment {
   investedAmount Decimal          @db.Decimal(12, 2)
   investmentDate DateTime
   discountAmount Decimal?         @db.Decimal(12, 2)
+  donated        Decimal?         @db.Decimal(12, 2)
   exitDate       DateTime?
   returnAmount   Decimal          @default(0) @db.Decimal(12, 2)
   status         InvestmentStatus @default(ACTIVE)
