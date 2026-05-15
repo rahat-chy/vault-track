@@ -36,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     where: { id },
     data: {
       totalPaid: newTotalPaid,
-      ...(fullyRepaid ? { status: LoanStatus.CLOSED, returnDate: new Date() } : {}),
+      ...(fullyRepaid ? { status: LoanStatus.CLOSED, returnDate: new Date(paidAt) } : {}),
     },
   });
 

@@ -30,7 +30,7 @@ export async function PUT(
       data: {
         totalPaid: newTotalPaid,
         ...(fullyRepaid
-          ? { status: LoanStatus.CLOSED, returnDate: loan.returnDate ?? new Date() }
+          ? { status: LoanStatus.CLOSED, returnDate: new Date(Math.max(...allPayments.map(p => new Date(p.paidAt).getTime()))) }
           : { status: LoanStatus.ACTIVE, returnDate: null }),
       },
     });
