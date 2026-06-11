@@ -7,3 +7,7 @@
 body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
