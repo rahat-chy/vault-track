@@ -29,9 +29,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   });
 
   const newReturnAmount = Number(investment.returnAmount) + Number(amount);
+  const effective = Number(investment.investedAmount) - Number(investment.discountAmount ?? 0);
+  const newStatus = newReturnAmount >= effective ? 'CLOSED' : 'ACTIVE';
   await prisma.oneTimeInvestment.update({
     where: { id },
-    data: { returnAmount: newReturnAmount },
+    data: { returnAmount: newReturnAmount, status: newStatus },
   });
 
   return NextResponse.json(ret, { status: 201 });

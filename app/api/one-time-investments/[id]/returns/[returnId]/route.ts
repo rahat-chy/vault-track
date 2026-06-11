@@ -20,7 +20,10 @@ export async function PUT(
 
   const allReturns = await prisma.oneTimeInvestmentReturn.findMany({ where: { investmentId: id } });
   const newReturnAmount = allReturns.reduce((s, r) => s + Number(r.amount), 0);
-  await prisma.oneTimeInvestment.update({ where: { id }, data: { returnAmount: newReturnAmount } });
+  const investment = await prisma.oneTimeInvestment.findUnique({ where: { id } });
+  const effective = Number(investment!.investedAmount) - Number(investment!.discountAmount ?? 0);
+  const newStatus = newReturnAmount >= effective ? 'CLOSED' : 'ACTIVE';
+  await prisma.oneTimeInvestment.update({ where: { id }, data: { returnAmount: newReturnAmount, status: newStatus } });
 
   const ret = await prisma.oneTimeInvestmentReturn.findUnique({ where: { id: returnId } });
   return NextResponse.json(ret);
@@ -36,10 +39,13 @@ export async function DELETE(
 
   const remaining = await prisma.oneTimeInvestmentReturn.findMany({ where: { investmentId: id } });
   const newReturnAmount = remaining.reduce((s, r) => s + Number(r.amount), 0);
+  const inv = await prisma.oneTimeInvestment.findUnique({ where: { id } });
+  const effective = Number(inv!.investedAmount) - Number(inv!.discountAmount ?? 0);
+  const newStatus = newReturnAmount >= effective ? 'CLOSED' : 'ACTIVE';
 
   await prisma.oneTimeInvestment.update({
     where: { id },
-    data: { returnAmount: newReturnAmount },
+    data: { returnAmount: newReturnAmount, status: newStatus },
   });
 
   return new NextResponse(null, { status: 204 });
