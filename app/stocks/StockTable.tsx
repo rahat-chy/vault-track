@@ -38,6 +38,7 @@ export default function StockTable({ stocks, onEdit, onDelete, onTransactions }:
             <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Name</th>
             <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Status</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Holdings</th>
+            <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Average</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Invested</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Sells</th>
             <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4">Dividends</th>
@@ -48,7 +49,8 @@ export default function StockTable({ stocks, onEdit, onDelete, onTransactions }:
         </thead>
         <tbody className="divide-y divide-slate-100">
           {stocks.map((stock) => {
-            const { invested, sells, dividends, purification, net, heldShares } = stockTotals(stock);
+            const { invested, sells, dividends, purification, net, heldShares, totalBoughtShares } = stockTotals(stock);
+            const average = totalBoughtShares > 0 ? invested / totalBoughtShares : 0;
             return (
               <tr key={stock.id} className="group hover:bg-slate-50 transition-colors">
                 <td className="py-3 pr-4 font-medium text-slate-800">{stock.name}</td>
@@ -57,6 +59,9 @@ export default function StockTable({ stocks, onEdit, onDelete, onTransactions }:
                 </td>
                 <td className="py-3 pr-4 text-right text-slate-700 tabular-nums">
                   {heldShares > 0 ? heldShares.toLocaleString("en-BD", { maximumFractionDigits: 4 }) : "—"}
+                </td>
+                <td className="py-3 pr-4 text-right text-slate-700 tabular-nums">
+                  {average > 0 ? formatCurrency(average) : "—"}
                 </td>
                 <td className="py-3 pr-4 text-right text-slate-700 tabular-nums">
                   {invested > 0 ? formatCurrency(invested) : "—"}

@@ -306,12 +306,14 @@ export async function exportToPdf(): Promise<void> {
   } else {
     autoTable(doc, {
       startY: y,
-      head: [['Name', 'Status', 'Invested', 'Sells', 'Dividends', 'Purification', 'Net P&L', 'Held Shares']],
+      head: [['Name', 'Status', 'Average', 'Invested', 'Sells', 'Dividends', 'Purification', 'Net P&L', 'Held Shares']],
       body: stocks.map((s) => {
         const t = stockTotals(s);
+        const average = t.totalBoughtShares > 0 ? t.invested / t.totalBoughtShares : 0;
         return [
           s.name,
           s.status,
+          average > 0 ? formatCurrency(average) : '—',
           formatCurrency(t.invested),
           formatCurrency(t.sells),
           formatCurrency(t.dividends),
