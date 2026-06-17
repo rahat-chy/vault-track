@@ -4,7 +4,7 @@ import { prisma } from '@/app/lib/db';
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json();
-  const { unitPrice, numberOfStocks, investmentDate, notes } = body;
+  const { unitPrice, numberOfStocks, commission, investmentDate, notes } = body;
 
   if (!unitPrice || !numberOfStocks || !investmentDate) {
     return NextResponse.json(
@@ -23,6 +23,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       stockId: id,
       unitPrice,
       numberOfStocks,
+      commission: commission ?? 0,
       investmentDate: new Date(investmentDate),
       notes: notes || null,
     },

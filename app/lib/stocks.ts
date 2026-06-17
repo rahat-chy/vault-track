@@ -12,7 +12,7 @@ export const STOCK_STATUS_STYLES: Record<StockStatus, string> = {
 
 export function stockTotals(stock: Stock) {
   const invested = stock.buys.reduce(
-    (acc, b) => acc + Number(b.unitPrice) * Number(b.numberOfStocks),
+    (acc, b) => acc + Number(b.unitPrice) * Number(b.numberOfStocks) + Number(b.commission),
     0,
   );
   const sells = stock.sells.reduce(

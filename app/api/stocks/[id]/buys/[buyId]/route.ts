@@ -7,7 +7,7 @@ export async function PUT(
 ) {
   const { buyId } = await params;
   const body = await request.json();
-  const { unitPrice, numberOfStocks, investmentDate, notes } = body;
+  const { unitPrice, numberOfStocks, commission, investmentDate, notes } = body;
 
   if (!unitPrice || !numberOfStocks || !investmentDate) {
     return NextResponse.json(
@@ -46,6 +46,7 @@ export async function PUT(
     data: {
       unitPrice,
       numberOfStocks,
+      commission: commission ?? 0,
       investmentDate: new Date(investmentDate),
       notes: notes || null,
     },

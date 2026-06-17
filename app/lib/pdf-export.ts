@@ -338,11 +338,12 @@ export async function exportToPdf(): Promise<void> {
         y = subLabel(doc, 'Buys', 18, y);
         autoTable(doc, {
           startY: y,
-          head: [['Unit Price', 'Shares', 'Total Amount', 'Date', 'Notes']],
+          head: [['Unit Price', 'Shares', 'Commission', 'Total Amount', 'Date', 'Notes']],
           body: stock.buys.map((b) => [
             formatCurrency(Number(b.unitPrice)),
             Number(b.numberOfStocks).toFixed(4),
-            formatCurrency(Number(b.unitPrice) * Number(b.numberOfStocks)),
+            formatCurrency(Number(b.commission)),
+            formatCurrency(Number(b.unitPrice) * Number(b.numberOfStocks) + Number(b.commission)),
             formatDate(b.investmentDate),
             b.notes ?? '—',
           ]),

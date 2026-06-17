@@ -84,6 +84,7 @@ export interface StockBuy {
   stockId: string;
   unitPrice: string | number;
   numberOfStocks: string | number;
+  commission: string | number;
   investmentDate: string;
   notes: string | null;
 }

@@ -7,6 +7,7 @@ import type { Stock, StockBuy } from "@/app/lib/types";
 interface BuyForm {
   unitPrice: string;
   numberOfStocks: string;
+  commission: string;
   date: string;
   notes: string;
 }
@@ -21,6 +22,7 @@ export default function BuysTab({ stock, onSaved }: Props) {
   const [form, setForm] = useState<BuyForm>({
     unitPrice: "",
     numberOfStocks: "",
+    commission: "",
     date: toDateInput(new Date().toISOString()),
     notes: "",
   });
@@ -33,6 +35,7 @@ export default function BuysTab({ stock, onSaved }: Props) {
     setForm({
       unitPrice: String(buy.unitPrice),
       numberOfStocks: String(buy.numberOfStocks),
+      commission: String(buy.commission ?? 0),
       date: toDateInput(buy.investmentDate),
       notes: buy.notes ?? "",
     });
@@ -41,7 +44,7 @@ export default function BuysTab({ stock, onSaved }: Props) {
 
   function cancelEdit() {
     setEditing(null);
-    setForm({ unitPrice: "", numberOfStocks: "", date: toDateInput(new Date().toISOString()), notes: "" });
+    setForm({ unitPrice: "", numberOfStocks: "", commission: "", date: toDateInput(new Date().toISOString()), notes: "" });
     setError("");
   }
 
@@ -55,6 +58,11 @@ export default function BuysTab({ stock, onSaved }: Props) {
     const qty = parseFloat(form.numberOfStocks);
     if (!form.numberOfStocks || isNaN(qty) || qty <= 0) {
       setError("Please enter a valid number of shares greater than zero.");
+      return;
+    }
+    const commission = form.commission ? parseFloat(form.commission) : 0;
+    if (form.commission && (isNaN(commission) || commission < 0)) {
+      setError("Commission must be zero or greater.");
       return;
     }
     if (!form.date) {
@@ -76,6 +84,7 @@ export default function BuysTab({ stock, onSaved }: Props) {
       const body = {
         unitPrice: parseFloat(form.unitPrice),
         numberOfStocks: qty,
+        commission,
         investmentDate: form.date,
         notes: form.notes || null,
       };
@@ -136,6 +145,7 @@ export default function BuysTab({ stock, onSaved }: Props) {
               <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Date</th>
               <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Unit Price</th>
               <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Shares</th>
+              <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Commission</th>
               <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2 pr-4">Total</th>
               <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2">Notes</th>
               <th className="pb-2" />
@@ -147,8 +157,9 @@ export default function BuysTab({ stock, onSaved }: Props) {
                 <td className="py-2.5 pr-4 text-slate-600">{formatDate(buy.investmentDate)}</td>
                 <td className="py-2.5 pr-4 text-right text-slate-700 tabular-nums">{formatCurrency(Number(buy.unitPrice))}</td>
                 <td className="py-2.5 pr-4 text-right text-slate-700 tabular-nums">{Number(buy.numberOfStocks)}</td>
+                <td className="py-2.5 pr-4 text-right text-slate-700 tabular-nums">{formatCurrency(Number(buy.commission))}</td>
                 <td className="py-2.5 pr-4 text-right text-slate-700 tabular-nums font-medium">
-                  {formatCurrency(Number(buy.unitPrice) * Number(buy.numberOfStocks))}
+                  {formatCurrency(Number(buy.unitPrice) * Number(buy.numberOfStocks) + Number(buy.commission))}
                 </td>
                 <td className="py-2.5 text-slate-500 text-xs max-w-[80px] truncate" title={buy.notes ?? undefined}>
                   {buy.notes ?? "—"}
@@ -189,7 +200,7 @@ export default function BuysTab({ stock, onSaved }: Props) {
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
           )}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Unit Price</label>
               <input
@@ -205,6 +216,17 @@ export default function BuysTab({ stock, onSaved }: Props) {
                 type="number" min="0.0001" step="0.0001" placeholder="0"
                 value={form.numberOfStocks}
                 onChange={(e) => setForm((f) => ({ ...f, numberOfStocks: e.target.value }))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">
+                Commission <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="number" min="0" step="0.01" placeholder="0.00"
+                value={form.commission}
+                onChange={(e) => setForm((f) => ({ ...f, commission: e.target.value }))}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
