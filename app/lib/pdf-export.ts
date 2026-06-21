@@ -137,6 +137,23 @@ export async function exportToPdf(): Promise<void> {
   const loansGiven = loans.filter((l) => l.type === LoanType.GIVEN);
   y = sectionHeader(doc, 'Loans Given', y);
 
+  const totalGivenLoanPrincipal = loansGiven.reduce(
+    (s, l) => s + Number(l.principalAmount),
+    0,
+  );
+  const totalGivenLoanPaid = loansGiven.reduce((s, l) => s + Number(l.totalPaid), 0);
+  const totalGivenLoanRemaining = totalGivenLoanPrincipal - totalGivenLoanPaid;
+  
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text('Total Loan Given: ' + totalGivenLoanPrincipal, 14, y);
+  y += 8;
+  doc.text('Total Given Loan Paid: ' + totalGivenLoanPaid, 14, y);
+  y += 8;
+  doc.text('Total Given Loan Payment Remaining: ' + totalGivenLoanRemaining, 14, y);
+  y += 8;
+
   if (loansGiven.length === 0) {
     y = noData(doc, y);
   } else {
@@ -192,6 +209,24 @@ export async function exportToPdf(): Promise<void> {
   y = sectionHeader(doc, 'Loans Taken', y);
   const loansTaken = loans.filter((l) => l.type === LoanType.TAKEN);
 
+  const totalTakenLoanPrincipal = loansTaken.reduce(
+    (s, l) => s + Number(l.principalAmount),
+    0,
+  );
+  const totalTakenLoanPaid = loansTaken.reduce((s, l) => s + Number(l.totalPaid), 0);
+  const totalTakenLoanRemaining = totalTakenLoanPrincipal - totalTakenLoanPaid;
+  
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text('Total Loan Taken: ' + totalTakenLoanPrincipal, 14, y);
+  y += 8;
+  doc.text('Total Taken Loan Paid: ' + totalTakenLoanPaid, 14, y);
+  y += 8;
+  doc.text('Total Taken Loan Payment Remaining: ' + totalTakenLoanRemaining, 14, y);
+  y += 8;
+  
+
   if (loansTaken.length === 0) {
     y = noData(doc, y);
   } else {
@@ -245,6 +280,20 @@ export async function exportToPdf(): Promise<void> {
 
   // ── One-Time Investments ─────────────────────────────────────────────────────
   y = sectionHeader(doc, 'One-Time Investments', y);
+
+  const totalInvested = investments.reduce((s, i) => s + Number(i.investedAmount), 0);
+  const totalDiscount = investments.reduce((s, i) => s + Number(i.discountAmount ?? 0), 0);
+  const totalReturned = investments.reduce((s, i) => s + Number(i.returnAmount), 0);
+  const totalNet = totalReturned - (totalInvested - totalDiscount);
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text('Total Invested: ' + totalInvested, 14, y);
+  y += 8;
+  doc.text('Total Return: ' + totalReturned, 14, y);
+  y += 8;
+  doc.text('Total Net: ' + totalNet, 14, y);
+  y += 8;
 
   if (investments.length === 0) {
     y = noData(doc, y);
@@ -300,6 +349,39 @@ export async function exportToPdf(): Promise<void> {
 
   // ── Stocks Summary ───────────────────────────────────────────────────────────
   y = sectionHeader(doc, 'Stocks', y);
+
+  const totals = stocks.reduce(
+    (acc, s) => {
+      const t = stockTotals(s);
+      return {
+        investedWithComm: acc.investedWithComm + t.investedWithComm,
+        investedWithoutComm: acc.investedWithoutComm + t.investedWithoutComm,
+        sells: acc.sells + t.sells,
+        dividends: acc.dividends + t.dividends,
+        net: acc.net + t.net,
+      };
+    },
+    {
+      investedWithComm: 0,
+      investedWithoutComm: 0,
+      sells: 0,
+      dividends: 0,
+      net: 0,
+    },
+  );
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text('Invested With Commission: ' + totals.investedWithComm, 14, y);
+  y += 8;
+  doc.text('Invested Without Commission: ' + totals.investedWithoutComm, 14, y);
+  y += 8;
+  doc.text('Sells: ' + totals.sells, 14, y);
+  y += 8;
+  doc.text('Dividents: ' + totals.dividends, 14, y);
+  y += 8;
+  doc.text('Net: ' + totals.net, 14, y);
+  y += 8;
 
   if (stocks.length === 0) {
     y = noData(doc, y);
