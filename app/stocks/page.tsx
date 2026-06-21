@@ -15,7 +15,9 @@ export default function StocksPage() {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [deletingStock, setDeletingStock] = useState<Stock | null>(null);
   const [deleteError, setDeleteError] = useState("");
-  const [transactionsStock, setTransactionsStock] = useState<Stock | null>(null);
+  const [transactionsStock, setTransactionsStock] = useState<Stock | null>(
+    null,
+  );
 
   const fetchStocks = useCallback(async () => {
     setLoading(true);
@@ -51,16 +53,22 @@ export default function StocksPage() {
     if (!deletingStock) return;
     setDeleteError("");
     try {
-      const res = await fetch(`/api/stocks/${deletingStock.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/stocks/${deletingStock.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setDeleteError(data.error || "Failed to delete stock. Please try again.");
+        setDeleteError(
+          data.error || "Failed to delete stock. Please try again.",
+        );
         return;
       }
       setDeletingStock(null);
       fetchStocks();
     } catch {
-      setDeleteError("Network error. Please check your connection and try again.");
+      setDeleteError(
+        "Network error. Please check your connection and try again.",
+      );
     }
   }
 
@@ -68,13 +76,20 @@ export default function StocksPage() {
     (acc, s) => {
       const t = stockTotals(s);
       return {
-        invested: acc.invested + t.invested,
+        investedWithComm: acc.investedWithComm + t.investedWithComm,
+        investedWithoutComm: acc.investedWithoutComm + t.investedWithoutComm,
         sells: acc.sells + t.sells,
         dividends: acc.dividends + t.dividends,
         net: acc.net + t.net,
       };
     },
-    { invested: 0, sells: 0, dividends: 0, net: 0 },
+    {
+      investedWithComm: 0,
+      investedWithoutComm: 0,
+      sells: 0,
+      dividends: 0,
+      net: 0,
+    },
   );
 
   return (
@@ -97,20 +112,35 @@ export default function StocksPage() {
             {!loading && stocks.length > 0 && (
               <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                 <span>
-                  <span className="font-medium text-slate-700">{formatCurrency(totals.invested)}</span>{" "}
-                  invested
+                  <span className="font-medium text-slate-700">
+                    {formatCurrency(totals.investedWithComm)}
+                  </span>{" "}
+                  invested(With Commission)
                 </span>
                 <span>
-                  <span className="font-medium text-slate-700">{formatCurrency(totals.sells)}</span>{" "}
+                  <span className="font-medium text-slate-700">
+                    {formatCurrency(totals.investedWithoutComm)}
+                  </span>{" "}
+                  invested(Without Commission)
+                </span>
+                <span>
+                  <span className="font-medium text-slate-700">
+                    {formatCurrency(totals.sells)}
+                  </span>{" "}
                   sells
                 </span>
                 <span>
-                  <span className="font-medium text-emerald-600">{formatCurrency(totals.dividends)}</span>{" "}
+                  <span className="font-medium text-emerald-600">
+                    {formatCurrency(totals.dividends)}
+                  </span>{" "}
                   dividends
                 </span>
                 <span>
-                  <span className={`font-medium ${totals.net >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                    {totals.net >= 0 ? "+" : ""}{formatCurrency(totals.net)}
+                  <span
+                    className={`font-medium ${totals.net >= 0 ? "text-emerald-600" : "text-red-600"}`}
+                  >
+                    {totals.net >= 0 ? "+" : ""}
+                    {formatCurrency(totals.net)}
                   </span>{" "}
                   net
                 </span>
@@ -120,8 +150,18 @@ export default function StocksPage() {
               onClick={openCreate}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors cursor-pointer"
             >
-              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              <svg
+                viewBox="0 0 24 24"
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               Add
             </button>
@@ -130,7 +170,9 @@ export default function StocksPage() {
 
         <div className="px-6 py-4">
           {loading ? (
-            <div className="text-center py-10 text-slate-400 text-sm">Loading…</div>
+            <div className="text-center py-10 text-slate-400 text-sm">
+              Loading…
+            </div>
           ) : (
             <StockTable
               stocks={stocks}
@@ -159,12 +201,16 @@ export default function StocksPage() {
       {deletingStock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
-            <h3 className="text-base font-semibold text-slate-800 mb-2">Delete Stock?</h3>
+            <h3 className="text-base font-semibold text-slate-800 mb-2">
+              Delete Stock?
+            </h3>
             <p className="text-sm text-slate-600 mb-1">
               This will permanently delete{" "}
               <span className="font-medium">{deletingStock.name}</span>.
             </p>
-            <p className="text-sm text-slate-500 mb-4">All buys, sells, and dividends will also be deleted.</p>
+            <p className="text-sm text-slate-500 mb-4">
+              All buys, sells, and dividends will also be deleted.
+            </p>
             {deleteError && (
               <p className="text-sm text-red-600 mb-3">{deleteError}</p>
             )}

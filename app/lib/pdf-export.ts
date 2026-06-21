@@ -309,12 +309,12 @@ export async function exportToPdf(): Promise<void> {
       head: [['Name', 'Status', 'Average', 'Invested', 'Sells', 'Dividends', 'Purification', 'Net P&L', 'Held Shares']],
       body: stocks.map((s) => {
         const t = stockTotals(s);
-        const average = t.totalBoughtShares > 0 ? t.invested / t.totalBoughtShares : 0;
+        const average = t.totalBoughtShares > 0 ? t.investedWithComm / t.totalBoughtShares : 0;
         return [
           s.name,
           s.status,
           average > 0 ? formatCurrency(average) : '—',
-          formatCurrency(t.invested),
+          formatCurrency(t.investedWithComm),
           formatCurrency(t.sells),
           formatCurrency(t.dividends),
           formatCurrency(t.purification),

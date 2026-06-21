@@ -28,10 +28,10 @@ export default function StockPerformanceChart({ stocks }: Props) {
   }
 
   const data = stocks.map((s) => {
-    const { invested, sells, dividends } = stockTotals(s);
+    const { investedWithComm, sells, dividends } = stockTotals(s);
     return {
       name: truncate(s.name),
-      Invested: invested,
+      Invested: investedWithComm,
       Sells: sells,
       Dividends: dividends,
     };
@@ -49,7 +49,11 @@ export default function StockPerformanceChart({ stocks }: Props) {
           textAnchor="end"
           height={50}
         />
-        <YAxis tick={{ fontSize: 11 }} tickFormatter={formatCompact} width={72} />
+        <YAxis
+          tick={{ fontSize: 11 }}
+          tickFormatter={formatCompact}
+          width={72}
+        />
         <Tooltip formatter={(val) => formatCurrency(Number(val))} />
         <Legend wrapperStyle={{ paddingTop: 8 }} />
         <Bar dataKey="Invested" fill="#4f46e5" radius={[4, 4, 0, 0]} />

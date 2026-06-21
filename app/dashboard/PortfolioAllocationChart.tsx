@@ -36,7 +36,7 @@ export default function PortfolioAllocationChart({
   );
 
   const stocksInvested = stocks.reduce(
-    (s, stock) => s + stockTotals(stock).invested,
+    (s, stock) => s + stockTotals(stock).investedWithComm,
     0,
   );
 
